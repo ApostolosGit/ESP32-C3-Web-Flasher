@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32-C3 OLED Web Flasher</title>
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+<style>:root{color-scheme:dark;font:16px system-ui}body{margin:0;background:#101a2c;color:#e8f3ff}main{max-width:780px;margin:6vh auto;padding:24px}h1{font-size:clamp(28px,5vw,44px)}section{border:1px solid #466484;background:#20344d;border-radius:18px;padding:25px;margin:20px 0}p{line-height:1.6;color:#c5d5e8}button{padding:13px 20px;border:0;border-radius:10px;background:#69b5ff;color:#061427;font-weight:700;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}a{color:#91cfff}code{color:#a8eaff}</style></head>
+<body><main><p>ESP32-C3 SuperMini • OLED 1.3" SH1106</p><h1>Web Flasher &amp; OTA</h1>
+<section><h2>USB firmware installation</h2><p>Σύνδεσε την πλακέτα με καλώδιο USB δεδομένων και άνοιξε τη σελίδα από Chrome ή Edge σε desktop. Το USB flash μπορεί να διαγράψει προηγούμενα δεδομένα.</p>
+<div id="waiting">Έλεγχος αν έχει δημοσιευτεί εγκεκριμένο firmware…</div>
+<div id="installer" hidden><esp-web-install-button manifest="./manifest.json"><button slot="activate">Connect &amp; Install</button><span slot="unsupported">Χρειάζεται Chrome/Edge με Web Serial.</span></esp-web-install-button></div>
+<p id="state" role="status"></p></section>
+<section><h2>OTA via local Wi-Fi</h2><p>Το OTA πραγματοποιείται από τη συσκευή, όχι απευθείας από το GitHub Pages. Συνδέσου στο Wi-Fi της συσκευής <code>C3-OLED-Setup</code> και άνοιξε <a href="http://192.168.4.1/">http://192.168.4.1/</a>, ή χρησιμοποίησε την IP που εμφανίζει η OLED. Επίλεξε το νέο <code>firmware.bin</code> από τα ιδιωτικά build artifacts.</p></section>
+<section><h2>Συνδέσεις OLED</h2><p>GND → GND · VCC → 3V3 · SCL → GPIO4 · SDA → GPIO3</p><p>Πριν από την κόλληση, έλεγξε τη σειρά pin και τη μηχανική ευθυγράμμιση.</p></section>
+<p><small>Τα δοκιμαστικά binaries δεν δημοσιεύονται αυτόματα. Η δημόσια σελίδα δεν περιέχει πηγαίο κώδικα firmware ή κωδικούς Wi-Fi.</small></p>
+</main><script>
+(async()=>{
+ const message=document.getElementById('state');
+ try {
+  const m=await fetch('./manifest.json',{cache:'no-store'});
+  if(!m.ok)throw Error('manifest not published');
+  const info=await m.json();
+  if(!info.builds?.some(b=>b.chipFamily==='ESP32-C3'))throw Error('missing chip target');
+  const f=await fetch('./firmware/factory.bin',{method:'HEAD',cache:'no-store'});
+  if(!f.ok)throw Error('firmware file not published');
+  document.getElementById('installer').hidden=false;
+  message.textContent='Εγκεκριμένο firmware διαθέσιμο για USB flash.';
+ } catch(e) {message.textContent='Δεν έχει δημοσιευτεί ακόμη εγκεκριμένο factory.bin. Το USB flash δεν είναι ενεργό.'}
+ document.getElementById('waiting').hidden=true;
+})();
+</script></body></html>
